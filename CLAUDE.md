@@ -535,6 +535,48 @@ this page reports is single-vantage; the verdict stays `gapped`, because data wa
 and what narrows is the sentence the tooltip is allowed to say. The real fix is a second
 market-by-price recorder, which is not work this repo can do.
 
+**Where there ARE several vantages and they disagree, the line names the recorders.**
+`GapConfinedNodes` is set when every gapped series on a publisher line was recorded intact by
+another vantage of the same channel instance over the same window, and the badge then prints
+`at cmh and was` beside the count. Until it existed the page had no words for that case: a line
+losing 1% at one recorder and a line losing it at every recorder printed the same badge, and on
+mainnet 2026-09-26 both Kalshi perps paths read `gapped` at `aws-cmh` (23,131 ppm) and `aws-was`
+(2,428 ppm) while `aws-dub` recorded the same two channel instances with no marker at all for
+hours. Both paths gapping together at one recorder while a third records them clean is a statement
+about that recorder.
+
+The verdict is deliberately unchanged — data was lost, the recording is incomplete, and a floor
+under `gapped` is the product decision this file declines to take elsewhere. What changes is the
+sentence beside it, which is the same bound `GapNodes` sets from the other end.
+
+Four rules make the claim safe, and each is a way to charge a recorder for something it did not do.
+The witness must have **measured** the series and found it clean: a stalled peer recorded nothing
+and corroborates nothing, and a peer whose loss query failed counted nothing. It must also have been
+**recording when the loss happened** — `edgeMulticastGapWitnessCovers`, over the `PresentMinutes`
+both gap-counting legs now carry. `ok` asks only for a fresh `LastSeen`, and both legs aggregate one
+row per series over the whole window, so a volume figure has no time structure in it: a peer that
+joined at minute 6 of 15, or bounced for three of them, holds most of the messages and none of the
+minutes that matter. It must cover every minute the gapped series has a gap episode in, or — where
+nothing names those minutes — every minute that series was itself recording. The second case covers
+two shapes: loss counted from per-instrument holes with no marker written, and a series carrying
+BOTH, where the markers account for only part of the loss. Episodes narrow the claim only when
+`UpdatesMissing` is zero, so the unmarked half is never left unwitnessed. The array is capped at
+window minutes **+ 1**, because the window is a duration back from now rather than a minute-aligned
+frame and so touches one more whole minute than it lasts; capped one short, `groupUniqArray` drops
+an arbitrary minute and a recorder present throughout can lose the claim, or flip on it between
+refreshes. Minute grain, not second: fifteen entries per series
+against nine hundred, and the residual sub-minute hole is worth the three orders of magnitude. On
+the top-of-book plane this is what catches a peer whose book-top writer stopped, which
+`mergeEdgeMulticastTOBGaps` otherwise leaves reading `ok` off the capture leg's fresher `LastSeen`
+with a zero gap count it earned by writing nothing. The key is **(publisher, capture source, Channel ID)** —
+the capture source because a clean reading on another market says nothing about this one, and the
+publisher because one path's clean recording must never exonerate the other's loss, which is the
+opposite of what the per-line verdict is for. The channel id is in it as well but is not what
+separates the paths: they publish under different ids today, and collapsing them onto one is a
+settled upstream change. And **one unwitnessed gap withdraws the claim for the whole line**, since
+the claim is about all of its loss; a series with no capture source name is never witnessed and
+never a witness, the rule every rollup keyed on that name follows.
+
 **Top of book is no longer single-vantage.** The recorded-gap leg measures three recorders of the
 same feed, which is what makes `GapNodes` mean anything there — and it is why
 `edgeMulticastAllPathsGapped` intersects across vantages rather than unioning: with several

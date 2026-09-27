@@ -7887,6 +7887,10 @@ export interface KalshiL2Lane {
   gap_books: number
   /** The same loss on a time axis. Absent on a clean lane and on an unseen one. */
   gap_episodes?: GapEpisode[]
+  /** Every whole minute this series recorded a message in, as unix seconds at the minute boundary.
+   *  Presence, not fault: it is what lets a clean vantage stand as a witness for another's loss,
+   *  and the API is the only consumer. */
+  present_minutes?: number[]
   /** Per-instrument sequence loss: delta updates that never arrived. updates_received is the
    *  denominator — expected is received + missing — and a lane with no updates has no rate rather
    *  than a rate of zero. */
@@ -8199,6 +8203,11 @@ export interface EdgeMulticastSequenceHealth {
   /** Distinct recording nodes behind the gap-measured instances. One means a single vantage: a
    *  loss on the branch into that recorder cannot be told apart from a loss on the path. */
   gap_nodes?: number
+  /** The recording nodes that gapped, set only when EVERY gapped series on this line was recorded
+   *  intact by another vantage of the same channel instance. The loss is then downstream of the
+   *  point the paths split — the recorder's own branch — and not the path end to end. The verdict
+   *  is unchanged; this is what the page may say beside it. */
+  gap_confined_nodes?: string[]
   /** Instances stalled only because their capture source stopped producing on every path at once.
    *  Counted apart from stalled: it is a statement about the feed's upstream, not about a path. */
   capture_source_quiet?: number
